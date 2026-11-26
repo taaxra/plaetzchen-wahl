@@ -602,7 +602,7 @@ let allFilter="alle";
 function renderAll(root){
   const sc=el("div","scroller");
   const filters=el("div","filters");
-  [["alle","Alle"],["star","Favoriten ⭐"],["like","Will ich 👍"],["nope","Nein 👎"],["offen","Offen"]].forEach(([k,l])=>{
+  [["alle","Alle"],["star","Favoriten ⭐"],["like","Mach ja 👍"],["nope","Nein 👎"],["offen","Offen"]].forEach(([k,l])=>{
     const b=el("button","fchip",l); b.type="button"; b.setAttribute("aria-selected",allFilter===k?"true":"false");
     b.onclick=()=>{allFilter=k; render();}; filters.append(b);
   });
@@ -771,7 +771,7 @@ function openDetail(c){
     const mk=(k,icon,label)=>{ const b=el("button","dv dv-"+k); b.type="button"; b.setAttribute("aria-selected",cur===k?"true":"false");
       b.innerHTML=icon+"<span>"+label+"</span>"; b.onclick=()=>{ setVote(state.current,c.id, cur===k?null:k); lastAction=null; close(); render(); }; return b; };
     dv.append(mk("nope",IC.nope,"Nein"));
-    dv.append(mk("like",IC.like,"Will ich"));
+    dv.append(mk("like",IC.like,"Mach ja"));
     dv.append(mk("star",IC.star,"Favorit"));
     sh.append(dv);
     const a=el("a","btn-wide"); a.href=c.url; a.target="_blank"; rel(a);
