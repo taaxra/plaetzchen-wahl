@@ -64,6 +64,9 @@ a{color:var(--brand)}
 .w-title{font-family:var(--font-display);font-weight:680;font-size:clamp(34px,10vw,52px);
   line-height:1.02;margin:.18em 0 .1em;text-wrap:balance}
 .w-sub{color:var(--muted);font-size:15px;max-width:34ch;margin:0 auto;line-height:1.5}
+.joke{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:15.5px;color:var(--brand);margin-top:10px;text-wrap:balance}
+.who-label{text-align:center;color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.04em}
+.btn-go{align-self:center;width:100%;max-width:320px;padding:15px;border-radius:14px;border:0;background:var(--brand);color:#fff;font-weight:700;font-size:16px;box-shadow:var(--shadow)}
 .people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .person>div{min-width:0}
 .person .pprog{overflow:hidden;text-overflow:ellipsis}
@@ -306,6 +309,7 @@ function saveState(){ try{localStorage.setItem(LS_KEY, JSON.stringify(state));}c
 /* ===== Data ===== */
 let DATA=[];
 let ui={view:"swipe"};
+let showIntro=false;
 
 /* ===== Helpers ===== */
 const el=(t,c,txt)=>{const e=document.createElement(t); if(c)e.className=c; if(txt!=null)e.textContent=txt; return e;};
@@ -335,7 +339,8 @@ const IC={
 const app=document.getElementById("app");
 function render(){
   app.innerHTML="";
-  if(!state.current){ renderWelcome(); return; }
+  if(!state.current){ renderProfile(); return; }
+  if(showIntro){ renderIntro(); return; }
   renderTopbar();
   const main=el("main");
   const vSwipe=el("section","view"); vSwipe.id="v-swipe";
@@ -348,19 +353,29 @@ function render(){
 }
 
 /* ===== Welcome ===== */
-function renderWelcome(){
+function renderProfile(){
   const w=el("div","welcome");
   const head=el("div","w-head");
   head.append(el("div","w-kicker","Plätzchen-Wahl 2026"));
-  const t=el("h1","w-title","Welche Plätzchen backen wir?");
-  head.append(t);
-  head.append(el("p","w-sub","Wischt euch durch 59 Rezepte – jeder für sich. Am Ende küren wir die 15 besten für die ganze Familie."));
+  head.append(el("h1","w-title","Welche Plätzchen backen wir?"));
+  head.append(el("div","joke","„Let's Make Christmas Great Again“ 🎄"));
+  w.append(head);
+  w.append(el("div","who-label","Wer bist du?"));
+  w.append(peopleGrid(id=>{ state.current=id; saveState(); showIntro=true; ui.view="swipe"; render(); }));
+  app.append(w);
+}
+function renderIntro(){
+  const p=personById(state.current);
+  const w=el("div","welcome");
+  const head=el("div","w-head");
+  head.append(el("div","w-kicker","Hallo "+p.name+"! 👋"));
+  head.append(el("h1","w-title","So funktioniert's"));
+  head.append(el("p","w-sub","Wische dich durch 59 Rezepte – am Ende küren wir die 15 besten für die ganze Familie."));
   w.append(head);
   w.append(buildLegend());
-  const who=el("div"); who.style.textAlign="center"; who.style.color="var(--muted)";
-  who.style.fontSize="13px"; who.style.fontWeight="600"; who.style.letterSpacing=".04em"; who.textContent="Wer bist du?";
-  w.append(who);
-  w.append(peopleGrid(id=>{ state.current=id; saveState(); ui.view="swipe"; render(); }));
+  const go=el("button","btn-go","Los geht's! 🍪"); go.type="button";
+  go.onclick=()=>{ showIntro=false; render(); };
+  w.append(go);
   app.append(w);
 }
 function peopleGrid(onPick){
@@ -371,7 +386,7 @@ function peopleGrid(onPick){
     const mid=el("div");
     mid.append(el("div","pname",p.name));
     const done=progressOf(p.id), total=DATA.length;
-    mid.append(el("div","pprog", done===0?"noch nicht gestartet":(done>=total?"fertig – alle bewertet":done+" von "+total)));
+    mid.append(el("div","pprog", done===0?"noch offen":(done>=total?"fertig ✓":done+" / "+total)));
     b.append(mid);
     const ring=el("div","ring");
     const pct= total? Math.round(done/total*100):0;
