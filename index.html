@@ -1,0 +1,724 @@
+<title>Plätzchen-Wahl</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,480;9..144,600;9..144,680&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* ---- Layout concept: mobile-first card deck over a warm bakery canvas;
+       sticky top identity + segmented nav; fixed bottom action bar on the deck. ---- */
+:root{
+  --bg:#fff5ed; --surface:#ffffff; --surface-2:#ffe7d8; --fg:#2c1715; --muted:#a06a60;
+  --line:#ffd6c4; --line-strong:#f6b9a3;
+  --brand:#e4262b; --like:#15a85a; --star:#f6a81a; --nope:#c58a7d;
+  --like-tint:#d6f3e2; --star-tint:#ffeec6; --nope-tint:#f8e1d8; --brand-tint:#ffdedb;
+  --holly:#1aa05a; --snow:#ffffff;
+  --shadow:0 9px 28px rgba(210,60,45,.16), 0 2px 7px rgba(130,40,30,.10);
+  --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --font-ui:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --p-mama:#e4342f; --p-papa:#17a257; --p-david:#2f82da; --p-nicki:#f5a613; --p-tizi:#a158da; --p-tara:#ec5a93;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#122619; --surface:#1b3626; --surface-2:#254732; --fg:#f5efe2; --muted:#a8c3ae;
+  --line:#2f5038; --line-strong:#40664a;
+  --brand:#ff5b50; --like:#45c97c; --star:#ffc63d; --nope:#bd9c8e;
+  --like-tint:#1b4029; --star-tint:#43380f; --nope-tint:#36291f; --brand-tint:#43211d;
+  --holly:#45c97c; --snow:#f5efe2;
+  --shadow:0 11px 32px rgba(0,0,0,.52), 0 2px 9px rgba(0,0,0,.4);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#122619; --surface:#1b3626; --surface-2:#254732; --fg:#f5efe2; --muted:#a8c3ae;
+  --line:#2f5038; --line-strong:#40664a;
+  --brand:#ff5b50; --like:#45c97c; --star:#ffc63d; --nope:#bd9c8e;
+  --like-tint:#1b4029; --star-tint:#43380f; --nope-tint:#36291f; --brand-tint:#43211d;
+  --holly:#45c97c; --snow:#f5efe2;
+  --shadow:0 11px 32px rgba(0,0,0,.52), 0 2px 9px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:
+    radial-gradient(85% 50% at 8% -4%, var(--brand-tint), transparent 60%),
+    radial-gradient(85% 50% at 100% 2%, var(--like-tint), transparent 58%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--fg);font-family:var(--font-ui);
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none;}
+#app{min-height:100%;display:flex;flex-direction:column}
+button{font-family:inherit;cursor:pointer;color:inherit}
+a{color:var(--brand)}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- WELCOME / PROFILE ---------- */
+.welcome{flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px;
+  padding-block:40px;max-width:560px;margin:0 auto;width:100%}
+.w-head{text-align:center}
+.w-kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--brand);font-weight:600}
+.w-title{font-family:var(--font-display);font-weight:680;font-size:clamp(34px,10vw,52px);
+  line-height:1.02;margin:.18em 0 .1em;text-wrap:balance}
+.w-sub{color:var(--muted);font-size:15px;max-width:34ch;margin:0 auto;line-height:1.5}
+.people{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.person{display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);text-align:left;
+  transition:transform .12s ease, border-color .12s ease}
+.person:active{transform:scale(.97)}
+.person:hover{border-color:var(--line-strong)}
+.ava{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;
+  color:#fff;font-weight:700;font-size:18px;font-family:var(--font-display);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.person .pname{font-weight:600;font-size:16px}
+.person .pprog{font-size:12.5px;color:var(--muted);margin-top:2px}
+.ring{--v:0;width:34px;height:34px;flex:none;border-radius:50%;margin-left:auto;
+  background:conic-gradient(var(--like) calc(var(--v)*1%), var(--surface-2) 0);
+  display:grid;place-items:center}
+.ring::after{content:"";width:24px;height:24px;border-radius:50%;background:var(--surface)}
+.ring.done{background:var(--like)}
+.ring.done::after{content:"✓";color:#fff;background:transparent;font-size:14px;font-weight:700;display:grid;place-items:center;width:auto;height:auto}
+
+/* ---------- TOP BAR ---------- */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);
+  border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);
+  background:var(--bg);z-index:30}
+.tb-row{display:flex;align-items:center;gap:10px;padding-block:9px;min-height:52px}
+.me{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 5px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line)}
+.me .ava{width:30px;height:30px;font-size:13px}
+.me .mname{font-weight:600;font-size:14px}
+.me .chev{color:var(--muted);font-size:11px;margin-left:-2px}
+.seg{margin-left:auto;display:flex;background:var(--surface-2);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:7px 13px;font-size:13px;
+  font-weight:600;color:var(--muted);white-space:nowrap}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* ---------- MAIN ---------- */
+main{flex:1;display:flex;flex-direction:column;min-height:0}
+.view{flex:1;min-height:0;display:flex;flex-direction:column}
+.view[hidden]{display:none!important}
+
+/* ---------- SWIPE DECK ---------- */
+.deck-wrap{flex:1;display:flex;flex-direction:column;max-width:460px;width:100%;margin:0 auto;min-height:0}
+.deck-top{display:flex;align-items:center;justify-content:space-between;padding-block:12px 6px;gap:12px}
+.deck-count{font-size:13px;color:var(--muted);font-weight:500}
+.deck-count b{color:var(--fg);font-variant-numeric:tabular-nums}
+.pbar{flex:1;height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;max-width:180px}
+.pbar i{display:block;height:100%;background:var(--brand);border-radius:999px;transition:width .3s ease}
+.stage{position:relative;flex:1;min-height:0;margin:4px 0}
+.card{position:absolute;inset:0;border-radius:22px;overflow:hidden;background:var(--surface-2);
+  box-shadow:var(--shadow);border:1px solid var(--line);will-change:transform;
+  display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.card.gone{transition:transform .42s cubic-bezier(.2,.7,.3,1),opacity .42s ease}
+.card .photo{position:relative;flex:1;min-height:0;background:#d9cfbe}
+.card .photo img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.card .photo.placeholder{display:grid;place-items:center;text-align:center;
+  background:radial-gradient(120% 90% at 50% 0,var(--star-tint),var(--surface-2))}
+.ph-emoji{font-size:74px;filter:saturate(.9)}
+.ph-lock{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.45);color:#fff;
+  font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;backdrop-filter:blur(4px)}
+.scrim{position:absolute;inset:auto 0 0 0;height:62%;
+  background:linear-gradient(to top,rgba(20,14,6,.86),rgba(20,14,6,.45) 42%,transparent);pointer-events:none}
+.card .info{position:absolute;inset:auto 0 0 0;padding:16px 17px 17px;color:#fff;z-index:2}
+.card .cname{font-family:var(--font-display);font-weight:600;font-size:clamp(23px,6.4vw,30px);
+  line-height:1.05;text-wrap:balance;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+.card .csub{font-size:13.5px;opacity:.92;margin-top:5px;line-height:1.4;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,.17);color:#fff;padding:5px 10px;border-radius:999px;backdrop-filter:blur(3px)}
+.reczeile{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:600;
+  color:#fff;background:rgba(255,255,255,.16);padding:7px 13px;border-radius:999px;
+  text-decoration:none;backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.25)}
+.reczeile:hover{background:rgba(255,255,255,.26)}
+.stamp{position:absolute;top:22px;z-index:3;font-family:var(--font-display);font-weight:680;
+  font-size:30px;letter-spacing:.04em;padding:6px 16px;border-radius:12px;border:4px solid;
+  text-transform:uppercase;opacity:0;transition:opacity .08s linear;pointer-events:none}
+.stamp.s-like{right:20px;color:var(--like);border-color:var(--like);transform:rotate(13deg)}
+.stamp.s-nope{left:20px;color:#ff6b5e;border-color:#ff6b5e;transform:rotate(-13deg)}
+.stamp.s-star{left:50%;top:38%;transform:translate(-50%,-50%) rotate(-6deg);color:var(--star);border-color:var(--star)}
+.deck-empty{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;text-align:center;padding:24px}
+.deck-empty h3{font-family:var(--font-display);font-weight:600;font-size:26px;margin:0}
+.deck-empty p{color:var(--muted);margin:0;max-width:30ch;line-height:1.5}
+
+/* action bar */
+.actions{display:flex;align-items:center;justify-content:center;gap:14px;
+  padding-block:12px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+.abtn{border:0;border-radius:50%;background:var(--surface);box-shadow:var(--shadow);
+  display:grid;place-items:center;transition:transform .12s ease}
+.abtn:active{transform:scale(.9)}
+.abtn:disabled{opacity:.4}
+.abtn svg{width:26px;height:26px}
+.abtn.big{width:66px;height:66px}
+.abtn.big svg{width:30px;height:30px}
+.abtn.sm{width:50px;height:50px}
+.abtn.nope{color:var(--nope)} .abtn.nope:hover{background:var(--nope-tint)}
+.abtn.like{color:var(--like)} .abtn.like:hover{background:var(--like-tint)}
+.abtn.star{color:var(--star)} .abtn.star:hover{background:var(--star-tint)}
+.abtn.undo{color:var(--muted)} .abtn.undo:hover{background:var(--surface-2)}
+
+/* ---------- OVERVIEW (ALLE) ---------- */
+.scroller{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-block:12px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fchip{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);
+  border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;white-space:nowrap}
+.fchip[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:11px;
+  padding-bottom:28px}
+.tile{position:relative;border-radius:14px;overflow:hidden;background:var(--surface-2);
+  border:1px solid var(--line);aspect-ratio:3/4;text-align:left;padding:0;display:block}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile .tph{width:100%;height:100%;display:grid;place-items:center;font-size:40px;
+  background:radial-gradient(120% 90% at 50% 0,var(--star-tint),var(--surface-2))}
+.tile .tscrim{position:absolute;inset:auto 0 0 0;height:66%;
+  background:linear-gradient(to top,rgba(15,10,4,.9),transparent)}
+.tile .tname{position:absolute;inset:auto 0 0 0;padding:7px 8px;color:#fff;font-size:11.5px;
+  font-weight:600;line-height:1.2;z-index:2}
+.tile .tvote{position:absolute;top:7px;right:7px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;font-size:13px;color:#fff;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.tvote.v-like{background:var(--like)} .tvote.v-star{background:var(--star)}
+.tvote.v-nope{background:var(--nope)}
+.tile.locked .tname{padding-top:7px}
+
+/* ---------- RESULT ---------- */
+.result-head{padding-block:16px 6px}
+.result-head h2{font-family:var(--font-display);font-weight:680;font-size:28px;margin:0 0 4px}
+.result-head p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.voters{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.voter{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 4px}
+.voter .ava{width:22px;height:22px;font-size:10px}
+.voter.pending{opacity:.5}
+.result-note{background:var(--brand-tint);color:var(--fg);border-radius:12px;padding:11px 13px;
+  font-size:13px;line-height:1.45;margin:8px 0 2px;border:1px solid var(--line)}
+.podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px;align-items:end;margin:16px 0 8px}
+.pod{position:relative;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);background:var(--surface-2)}
+.pod .ph2{aspect-ratio:1/1;position:relative}
+.pod img{width:100%;height:100%;object-fit:cover;display:block}
+.pod .tph{width:100%;height:100%;display:grid;place-items:center;font-size:34px;
+  background:radial-gradient(120% 90% at 50% 0,var(--star-tint),var(--surface-2))}
+.pod .medal{position:absolute;top:6px;left:6px;font-size:18px;z-index:2;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.pod .pcap{padding:8px 9px 10px}
+.pod .pcap .nm{font-size:12.5px;font-weight:700;line-height:1.2;font-family:var(--font-display)}
+.pod .pcap .sc{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
+.pod.rank1{transform:translateY(-6px)}
+.rows{display:flex;flex-direction:column;gap:9px;padding-bottom:30px}
+.row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:9px 12px 9px 9px;box-shadow:0 1px 3px rgba(60,45,25,.06)}
+.row .rk{font-family:var(--font-display);font-weight:680;font-size:16px;color:var(--muted);width:22px;
+  text-align:center;flex:none;font-variant-numeric:tabular-nums}
+.row .thb{width:52px;height:52px;border-radius:10px;overflow:hidden;flex:none;background:var(--surface-2)}
+.row .thb img{width:100%;height:100%;object-fit:cover;display:block}
+.row .thb .tph{width:100%;height:100%;display:grid;place-items:center;font-size:24px;
+  background:radial-gradient(120% 90% at 50% 0,var(--star-tint),var(--surface-2))}
+.row .rmid{flex:1;min-width:0}
+.row .rname{font-weight:600;font-size:14.5px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .rbreak{display:flex;gap:9px;margin-top:4px;font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.row .rbreak span{display:inline-flex;align-items:center;gap:3px}
+.row a.rlink{font-size:11.5px;color:var(--brand);text-decoration:none;font-weight:600;margin-top:4px;display:inline-block}
+.row .rscore{flex:none;text-align:center;min-width:42px}
+.row .rscore b{font-family:var(--font-display);font-weight:680;font-size:21px;font-variant-numeric:tabular-nums}
+.row .rscore small{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.match-badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;
+  color:var(--like);background:var(--like-tint);padding:2px 7px;border-radius:999px;margin-top:4px}
+.empty-state{text-align:center;color:var(--muted);padding:40px 20px;line-height:1.6}
+
+/* ---------- SHEET (person switch / tile detail) ---------- */
+.sheet-bg{position:fixed;inset:0;background:rgba(20,14,6,.5);z-index:50;display:flex;
+  align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s ease}
+.sheet-bg.show{opacity:1}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:22px 22px 0 0;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25);
+  transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.7,.3,1);max-height:86vh;overflow-y:auto}
+.sheet-bg.show .sheet{transform:translateY(0)}
+.sheet h3{font-family:var(--font-display);font-weight:600;font-size:20px;margin:2px 0 14px}
+.sheet .people{margin-bottom:4px}
+.grab{width:38px;height:4px;border-radius:999px;background:var(--line-strong);margin:0 auto 14px}
+.detail-photo{border-radius:14px;overflow:hidden;aspect-ratio:4/3;margin-bottom:14px;background:var(--surface-2)}
+.detail-photo img{width:100%;height:100%;object-fit:cover}
+.detail-photo .tph{width:100%;height:100%;display:grid;place-items:center;font-size:56px;
+  background:radial-gradient(120% 90% at 50% 0,var(--star-tint),var(--surface-2))}
+.detail-vote{display:flex;gap:10px;margin:14px 0 6px}
+.dv{flex:1;border:1px solid var(--line);border-radius:14px;padding:12px 6px;background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.dv[aria-selected="true"].dv-nope{background:var(--nope-tint);color:var(--nope);border-color:var(--nope)}
+.dv[aria-selected="true"].dv-like{background:var(--like-tint);color:var(--like);border-color:var(--like)}
+.dv[aria-selected="true"].dv-star{background:var(--star-tint);color:var(--star);border-color:var(--star)}
+.dv svg{width:24px;height:24px}
+.btn-wide{display:block;text-align:center;width:100%;padding:13px;border-radius:14px;
+  background:var(--brand);color:#fff;font-weight:600;font-size:15px;text-decoration:none;border:0;margin-top:6px}
+
+.loading{flex:1;display:grid;place-items:center;color:var(--muted);font-size:14px;gap:10px;text-align:center}
+.spin{width:30px;height:30px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--brand);
+  animation:sp 1s linear infinite;margin:0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.05ms!important}}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+</style>
+
+<div id="app" class="gutter">
+  <div class="loading" id="boot"><div><div class="spin"></div><div style="margin-top:12px">Plätzchen werden geladen…</div></div></div>
+</div>
+
+<script>
+"use strict";
+/* ===== People ===== */
+const PEOPLE = [
+  {id:"mama", name:"Mama", color:"var(--p-mama)"},
+  {id:"papa", name:"Papa", color:"var(--p-papa)"},
+  {id:"david", name:"David", color:"var(--p-david)"},
+  {id:"nicki", name:"Nicki", color:"var(--p-nicki)"},
+  {id:"tizi", name:"Tizi", color:"var(--p-tizi)"},
+  {id:"tara", name:"Tara", color:"var(--p-tara)"},
+];
+const personById = id => PEOPLE.find(p=>p.id===id);
+const initial = n => n.slice(0,1).toUpperCase();
+
+/* ===== Vote weights ===== */
+const WEIGHT = {star:2, like:1, nope:0};
+const LOCK_EMOJIS = ["🍪","🌰","🍫","🥮","🧁","🍥","🥜","🫚","🍊","☕","🎄","⭐"];
+
+/* ===== State (localStorage) ===== */
+const LS_KEY="plaetzchen_wahl_v1";
+let state={current:null, votes:{}};
+function loadState(){
+  try{const raw=localStorage.getItem(LS_KEY); if(raw){const o=JSON.parse(raw); if(o&&typeof o==="object"){state.current=o.current||null; state.votes=o.votes||{};}}}catch(e){}
+  for(const p of PEOPLE){ if(!state.votes[p.id]) state.votes[p.id]={}; }
+}
+function saveState(){ try{localStorage.setItem(LS_KEY, JSON.stringify(state));}catch(e){} }
+
+/* ===== Data ===== */
+let DATA=[];
+let ui={view:"swipe"};
+
+/* ===== Helpers ===== */
+const el=(t,c,txt)=>{const e=document.createElement(t); if(c)e.className=c; if(txt!=null)e.textContent=txt; return e;};
+function esc(s){return String(s==null?"":s);}
+function avatar(p, cls){ const a=el("div","ava"+(cls?" "+cls:""),initial(p.name)); a.style.background=p.color; return a; }
+function photoNode(c, phClass){
+  if(c.img){ const i=el("img"); i.src=c.img; i.alt=c.name; i.loading="lazy"; return i; }
+  const d=el("div", (phClass||"tph")); d.textContent = LOCK_EMOJIS[(c.id-1+LOCK_EMOJIS.length)%LOCK_EMOJIS.length]||"🍪"; return d;
+}
+function voteOf(personId, cookieId){ return (state.votes[personId]||{})[cookieId]||null; }
+function setVote(personId, cookieId, v){
+  if(!state.votes[personId]) state.votes[personId]={};
+  if(v==null) delete state.votes[personId][cookieId]; else state.votes[personId][cookieId]=v;
+  saveState();
+}
+function progressOf(personId){ const v=state.votes[personId]||{}; return Object.keys(v).length; }
+
+/* ===== Icons ===== */
+const IC={
+  nope:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  like:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.6 2 5 5.3 5c2 0 3.3 1.1 4.1 2.2L12 10l2.6-2.8C15.4 6.1 16.7 5 18.7 5 22 5 23.4 8.6 22 11.7 19.5 16.3 12 21 12 21z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.5L12 17.9 6.2 21l1.1-6.5L2.6 9.9l6.5-.95z"/></svg>',
+  undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3.5 13a9 9 0 1 0 2.2-8.3L3 7"/></svg>',
+};
+
+/* ===== Render root ===== */
+const app=document.getElementById("app");
+function render(){
+  app.innerHTML="";
+  if(!state.current){ renderWelcome(); return; }
+  renderTopbar();
+  const main=el("main");
+  const vSwipe=el("section","view"); vSwipe.id="v-swipe";
+  const vAll=el("section","view"); vAll.id="v-all";
+  const vRes=el("section","view"); vRes.id="v-result";
+  main.append(vSwipe,vAll,vRes);
+  app.append(main);
+  vSwipe.hidden=ui.view!=="swipe"; vAll.hidden=ui.view!=="all"; vRes.hidden=ui.view!=="result";
+  renderSwipe(vSwipe); renderAll(vAll); renderResult(vRes);
+}
+
+/* ===== Welcome ===== */
+function renderWelcome(){
+  const w=el("div","welcome");
+  const head=el("div","w-head");
+  head.append(el("div","w-kicker","Plätzchen-Wahl 2026"));
+  const t=el("h1","w-title","Welche Plätzchen backen wir?");
+  head.append(t);
+  head.append(el("p","w-sub","Wischt euch durch 59 Rezepte – jeder für sich. Am Ende sehen wir, welche die ganze Familie will."));
+  w.append(head);
+  const who=el("div"); who.style.textAlign="center"; who.style.color="var(--muted)";
+  who.style.fontSize="13px"; who.style.fontWeight="600"; who.style.letterSpacing=".04em"; who.textContent="Wer bist du?";
+  w.append(who);
+  w.append(peopleGrid(id=>{ state.current=id; saveState(); ui.view="swipe"; render(); }));
+  app.append(w);
+}
+function peopleGrid(onPick){
+  const g=el("div","people");
+  for(const p of PEOPLE){
+    const b=el("button","person"); b.type="button";
+    b.append(avatar(p));
+    const mid=el("div");
+    mid.append(el("div","pname",p.name));
+    const done=progressOf(p.id), total=DATA.length;
+    mid.append(el("div","pprog", done===0?"noch nicht gestartet":(done>=total?"fertig – alle bewertet":done+" von "+total)));
+    b.append(mid);
+    const ring=el("div","ring");
+    const pct= total? Math.round(done/total*100):0;
+    if(done>=total&&total>0){ ring.classList.add("done"); } else { ring.style.setProperty("--v", pct); }
+    b.append(ring);
+    b.onclick=()=>onPick(p.id);
+    g.append(b);
+  }
+  return g;
+}
+
+/* ===== Topbar ===== */
+function renderTopbar(){
+  const bar=el("div","topbar");
+  const inner=el("div","gutter");
+  const row=el("div","tb-row");
+  const me=el("button","me"); me.type="button";
+  const p=personById(state.current);
+  me.append(avatar(p));
+  me.append(el("span","mname",p.name));
+  me.append(el("span","chev","▼"));
+  me.onclick=openPersonSheet;
+  row.append(me);
+  const seg=el("div","seg"); seg.setAttribute("role","tablist");
+  [["swipe","Swipen"],["all","Alle"],["result","Ergebnis"]].forEach(([v,label])=>{
+    const b=el("button",null,label); b.type="button"; b.setAttribute("role","tab");
+    b.setAttribute("aria-selected", ui.view===v?"true":"false");
+    b.onclick=()=>{ ui.view=v; render(); };
+    seg.append(b);
+  });
+  row.append(seg);
+  inner.append(row); bar.append(inner); app.append(bar);
+}
+
+/* ===== Swipe deck ===== */
+let deckState=null;
+function renderSwipe(root){
+  const wrap=el("div","deck-wrap");
+  const order=DATA.map(c=>c.id).filter(id=>!voteOf(state.current,id));
+  const total=DATA.length, done=total-order.length;
+  const top=el("div","deck-top");
+  const cnt=el("div","deck-count"); cnt.innerHTML="<b>"+done+"</b> / "+total+" bewertet";
+  const pbar=el("div","pbar"); const pf=el("i"); pf.style.width=(total?done/total*100:0)+"%"; pbar.append(pf);
+  top.append(cnt,pbar);
+  wrap.append(top);
+
+  const stage=el("div","stage");
+  const empty=el("div","deck-empty");
+  empty.append(el("h3",null,"Fertig! 🎉"));
+  empty.append(el("p",null,"Du hast alle Plätzchen bewertet. Schau beim Ergebnis vorbei oder gib die Runde weiter."));
+  const goRes=el("button","btn-wide","Zum Ergebnis"); goRes.style.maxWidth="240px"; goRes.type="button";
+  goRes.onclick=()=>{ui.view="result";render();};
+  empty.append(goRes);
+  const pass=el("button"); pass.type="button"; pass.textContent="Person wechseln";
+  pass.style.cssText="background:none;border:0;color:var(--muted);font-weight:600;font-size:13px;text-decoration:underline";
+  pass.onclick=openPersonSheet; empty.append(pass);
+  stage.append(empty);
+
+  deckState={root,wrap,stage,order,busy:false};
+  renderCards();
+  wrap.append(stage);
+  wrap.append(buildActions());
+  root.append(wrap);
+}
+function buildActions(){
+  const bar=el("div","actions");
+  const mk=(cls,size,icon,label,fn)=>{const b=el("button","abtn "+cls+" "+size);b.type="button";b.innerHTML=icon;b.setAttribute("aria-label",label);b.onclick=fn;return b;};
+  const undo=mk("undo","sm",IC.undo,"Zurück",doUndo);
+  undo.id="undoBtn"; undo.disabled=!lastAction;
+  bar.append(undo);
+  bar.append(mk("nope","big",IC.nope,"Nein",()=>commit("nope")));
+  bar.append(mk("star","sm",IC.star,"Favorit",()=>commit("star")));
+  bar.append(mk("like","big",IC.like,"Will ich",()=>commit("like")));
+  const spacer=el("div"); spacer.style.width="50px"; bar.append(spacer);
+  return bar;
+}
+function renderCards(){
+  const {stage,order}=deckState;
+  [...stage.querySelectorAll(".card")].forEach(n=>n.remove());
+  const empty=stage.querySelector(".deck-empty");
+  if(order.length===0){ empty.style.display="flex"; return; }
+  empty.style.display="none";
+  // render up to 2 cards (top + peek), top last for z-order
+  const slice=order.slice(0,2).reverse();
+  for(const id of slice){
+    const c=DATA.find(x=>x.id===id);
+    const card=buildCard(c, id===order[0]);
+    stage.append(card);
+  }
+  attachDrag(stage.querySelector(".card:last-child"));
+}
+function buildCard(c, isTop){
+  const card=el("div","card"); card.dataset.id=c.id;
+  if(!isTop){ card.style.transform="scale(.955) translateY(10px)"; card.style.filter="brightness(.97)"; }
+  const photo=el("div","photo"+(c.img?"":" placeholder"));
+  if(c.img){ const i=el("img"); i.src=c.img; i.alt=c.name; photo.append(i); }
+  else { const e=el("div","ph-emoji"); e.textContent=LOCK_EMOJIS[(c.id-1)%LOCK_EMOJIS.length]; photo.append(e); }
+  if(c.locked){ const lk=el("div","ph-lock","🔒 privates Rezept"); photo.append(lk); }
+  else if(c.search){ const lk=el("div","ph-lock","🔎 Rezeptsuche"); photo.append(lk); }
+  photo.append(el("div","scrim"));
+  // stamps
+  const sl=el("div","stamp s-like","Lecker"); const sn=el("div","stamp s-nope","Nö");
+  const ss=el("div","stamp s-star","Favorit ⭐");
+  photo.append(sl,sn,ss);
+  card.append(photo);
+  const info=el("div","info");
+  info.append(el("div","cname",c.name));
+  if(c.sub) info.append(el("div","csub","„"+c.sub+"”"));
+  const chips=el("div","chips");
+  if(c.time) chips.append(chipEl("⏱ "+c.time+" Min."));
+  if(c.diff) chips.append(chipEl(diffLabel(c.diff)));
+  if(c.author && !/gelösch|unbekann|unknown/i.test(c.author)) chips.append(chipEl("von "+c.author));
+  info.append(chips);
+  const rec=el("a","reczeile"); rec.href=c.url; rec.target="_blank"; rel(rec);
+  rec.innerHTML=((c.locked||c.search)?'Auf Chefkoch suchen':'Rezept ansehen')+' <span aria-hidden="true">↗</span>';
+  rec.addEventListener("pointerdown",e=>e.stopPropagation());
+  info.append(rec);
+  card.append(info);
+  return card;
+}
+function chipEl(t){return el("span","chip",t);}
+function diffLabel(d){return d==="simpel"?"einfach":d==="pfiffig"?"pfiffig":"mittel";}
+function rel(a){a.rel="noopener noreferrer";}
+
+/* drag engine */
+let lastAction=null;
+function attachDrag(card){
+  if(!card) return;
+  let sx=0,sy=0,dx=0,dy=0,active=false,decided=null;
+  const sl=card.querySelector(".s-like"), sn=card.querySelector(".s-nope"), ss=card.querySelector(".s-star");
+  const down=e=>{ if(deckState.busy) return; active=true; decided=null; sx=e.clientX; sy=e.clientY;
+    card.setPointerCapture&&card.setPointerCapture(e.pointerId); card.style.transition="none"; };
+  const move=e=>{ if(!active) return; dx=e.clientX-sx; dy=e.clientY-sy;
+    const rot=dx/14;
+    card.style.transform="translate("+dx+"px,"+dy+"px) rotate("+rot+"deg)";
+    const up = dy< -60 && Math.abs(dx)<Math.abs(dy)*1.1;
+    ss.style.opacity = up? Math.min(1,(-dy-60)/90):0;
+    sl.style.opacity = (!up&&dx>0)? Math.min(1,dx/90):0;
+    sn.style.opacity = (!up&&dx<0)? Math.min(1,-dx/90):0;
+  };
+  const up=e=>{ if(!active) return; active=false;
+    const TH=95;
+    if(dy< -120 && Math.abs(dx)<110){ fly(card,"star"); return; }
+    if(dx>TH){ fly(card,"like"); return; }
+    if(dx<-TH){ fly(card,"nope"); return; }
+    card.style.transition="transform .28s cubic-bezier(.2,.7,.3,1)";
+    card.style.transform=""; sl.style.opacity=sn.style.opacity=ss.style.opacity=0;
+  };
+  card.addEventListener("pointerdown",down);
+  card.addEventListener("pointermove",move);
+  card.addEventListener("pointerup",up);
+  card.addEventListener("pointercancel",up);
+}
+function fly(card, type){
+  if(deckState.busy) return; deckState.busy=true;
+  const id=+card.dataset.id;
+  const dir = type==="nope"? -1 : type==="like"? 1 : 0;
+  card.classList.add("gone");
+  const x = dir*(window.innerWidth*0.9+160);
+  const y = type==="star"? -(window.innerHeight*0.8) : 40;
+  const rot = dir*22;
+  requestAnimationFrame(()=>{ card.style.transform="translate("+x+"px,"+y+"px) rotate("+rot+"deg)"; card.style.opacity="0"; });
+  setTimeout(()=>{ applyVote(id,type); }, 300);
+}
+function commit(type){
+  const card=deckState&&deckState.stage.querySelector(".card:last-child");
+  if(!card||deckState.busy) return;
+  fly(card,type);
+}
+function applyVote(id,type){
+  setVote(state.current,id,type);
+  lastAction={person:state.current,id,type};
+  deckState.order=DATA.map(c=>c.id).filter(x=>!voteOf(state.current,x));
+  deckState.busy=false;
+  // refresh counts + cards without full rerender
+  refreshDeckChrome();
+  renderCards();
+}
+function refreshDeckChrome(){
+  const total=DATA.length, done=total-deckState.order.length;
+  const cnt=deckState.root.querySelector(".deck-count");
+  if(cnt) cnt.innerHTML="<b>"+done+"</b> / "+total+" bewertet";
+  const pf=deckState.root.querySelector(".pbar i");
+  if(pf) pf.style.width=(total?done/total*100:0)+"%";
+  const ub=deckState.root.querySelector("#undoBtn"); if(ub) ub.disabled=!lastAction;
+}
+function doUndo(){
+  if(!lastAction||lastAction.person!==state.current) return;
+  setVote(lastAction.person,lastAction.id,null);
+  lastAction=null;
+  deckState.order=DATA.map(c=>c.id).filter(x=>!voteOf(state.current,x));
+  refreshDeckChrome(); renderCards();
+}
+
+/* ===== Overview (Alle) ===== */
+let allFilter="alle";
+function renderAll(root){
+  const sc=el("div","scroller");
+  const filters=el("div","filters");
+  [["alle","Alle"],["star","Favoriten ⭐"],["like","Will ich 👍"],["nope","Nein 👎"],["offen","Offen"]].forEach(([k,l])=>{
+    const b=el("button","fchip",l); b.type="button"; b.setAttribute("aria-selected",allFilter===k?"true":"false");
+    b.onclick=()=>{allFilter=k; render();}; filters.append(b);
+  });
+  sc.append(filters);
+  const grid=el("div","grid");
+  const list=DATA.filter(c=>{
+    const v=voteOf(state.current,c.id);
+    if(allFilter==="offen") return !v;
+    if(allFilter==="alle") return true;
+    return v===allFilter;
+  });
+  if(list.length===0){ sc.append(gridEmpty()); }
+  for(const c of list){
+    const t=el("button","tile"+(c.locked?" locked":"")); t.type="button";
+    t.append(photoNode(c,"tph"));
+    t.append(el("div","tscrim"));
+    t.append(el("div","tname",c.name));
+    const v=voteOf(state.current,c.id);
+    if(v){ const vb=el("div","tvote v-"+v, v==="star"?"★":v==="like"?"♥":"✕"); t.append(vb); }
+    t.onclick=()=>openDetail(c);
+    grid.append(t);
+  }
+  sc.append(grid); root.append(sc);
+}
+function gridEmpty(){ const d=el("div","empty-state"); d.textContent="Hier ist noch nichts – wische erst ein paar Plätzchen."; return d; }
+
+/* ===== Result ===== */
+let resultMode="score";
+function computeResults(){
+  const voters=PEOPLE.filter(p=>progressOf(p.id)>0);
+  const rows=DATA.map(c=>{
+    let score=0,star=0,like=0,nope=0,voted=0;
+    for(const p of PEOPLE){ const v=voteOf(p.id,c.id); if(!v) continue; voted++; score+=WEIGHT[v];
+      if(v==="star")star++; else if(v==="like")like++; else nope++; }
+    const positives=star+like;
+    const perfect = voters.length>0 && voted===voters.length && nope===0 && positives>0 && voters.length>=Math.min(2,PEOPLE.length);
+    const allSix = voted===PEOPLE.length && nope===0;
+    return {c,score,star,like,nope,voted,positives,perfect,allSix};
+  });
+  rows.sort((a,b)=> b.score-a.score || b.star-a.star || b.positives-a.positives || a.c.name.localeCompare(b.c.name));
+  return {rows,voters};
+}
+function renderResult(root){
+  const sc=el("div","scroller");
+  const {rows,voters}=computeResults();
+  const head=el("div","result-head");
+  head.append(el("h2",null,"Das Familien-Ergebnis"));
+  const totalVotes=PEOPLE.reduce((s,p)=>s+progressOf(p.id),0);
+  head.append(el("p", null, voters.length===0 ? "Noch keine Stimmen. Sobald jemand losswiped, erscheint hier die Rangliste." :
+    "Gewichtet: Favorit ⭐ zählt 2, Will ich 👍 zählt 1, Nein 👎 zählt 0. "+totalVotes+" Stimmen von "+voters.length+" von "+PEOPLE.length+" Personen."));
+  const vwrap=el("div","voters");
+  for(const p of PEOPLE){
+    const done=progressOf(p.id), total=DATA.length;
+    const v=el("div","voter"+(done===0?" pending":"")); v.append(avatar(p));
+    v.append(el("span",null,p.name+(done===0?" · –":done>=total?" · ✓":" · "+Math.round(done/total*100)+"%")));
+    vwrap.append(v);
+  }
+  head.append(vwrap);
+  sc.append(head);
+
+  if(voters.length===0){ const e=el("div","empty-state"); e.textContent="🍪"; e.style.fontSize="40px";
+    sc.append(e); root.append(sc); return; }
+
+  // podium top 3 (only among positives>0)
+  const ranked=rows.filter(r=>r.score>0);
+  if(ranked.length>=3){
+    const top3=ranked.slice(0,3);
+    const order=[top3[1],top3[0],top3[2]]; // 2nd,1st,3rd
+    const pod=el("div","podium");
+    const medals=["🥇","🥈","🥉"];
+    order.forEach((r)=>{
+      const rankIdx=top3.indexOf(r);
+      const d=el("div","pod"+(rankIdx===0?" rank1":""));
+      const ph=el("div","ph2"); ph.append(photoNode(r.c,"tph"));
+      ph.append(el("div","medal",medals[rankIdx])); d.append(ph);
+      const cap=el("div","pcap"); cap.append(el("div","nm",r.c.name));
+      cap.append(el("div","sc",r.score+" Pkt"+(r.perfect?" · Match":"")));
+      d.append(cap); pod.append(d);
+    });
+    sc.append(pod);
+  }
+
+  const anyMatch=rows.some(r=>r.perfect);
+  if(anyMatch){ const n=el("div","result-note");
+    n.innerHTML="✨ <b>Perfect Match:</b> Bei diesen Plätzchen waren sich alle einig (keiner hat Nein gesagt).";
+    sc.append(n); }
+
+  const rowsWrap=el("div","rows");
+  const shown = rows.filter(r=> r.voted>0);
+  let rank=0;
+  for(const r of shown){
+    rank++;
+    const row=el("div","row");
+    row.append(el("div","rk",r.score>0?String(rank):"–"));
+    const thb=el("div","thb"); thb.append(photoNode(r.c,"tph")); row.append(thb);
+    const mid=el("div","rmid");
+    mid.append(el("div","rname",r.c.name));
+    const bk=el("div","rbreak");
+    bk.innerHTML="<span>⭐ "+r.star+"</span><span>👍 "+r.like+"</span><span>👎 "+r.nope+"</span>";
+    mid.append(bk);
+    if(r.perfect){ const mb=el("div","match-badge"); mb.innerHTML="✓ "+(r.allSix?"Alle 6 wollen das":"Einstimmig"); mid.append(mb); }
+    const a=el("a","rlink"); a.href=r.c.url; a.target="_blank"; rel(a); a.textContent="Rezept ↗"; mid.append(document.createElement("br")); mid.append(a);
+    row.append(mid);
+    const sco=el("div","rscore"); sco.innerHTML="<b>"+r.score+"</b><small>Punkte</small>"; row.append(sco);
+    rowsWrap.append(row);
+  }
+  sc.append(rowsWrap);
+  root.append(sc);
+}
+
+/* ===== Sheets ===== */
+function openSheet(buildInner){
+  const bg=el("div","sheet-bg");
+  const sh=el("div","sheet");
+  sh.append(el("div","grab"));
+  buildInner(sh, ()=>close());
+  bg.append(sh);
+  function close(){ bg.classList.remove("show"); setTimeout(()=>bg.remove(),260); }
+  bg.addEventListener("click",e=>{ if(e.target===bg) close(); });
+  document.body.append(bg); requestAnimationFrame(()=>bg.classList.add("show"));
+  return close;
+}
+function openPersonSheet(){
+  openSheet((sh,close)=>{
+    sh.append(el("h3",null,"Wer bewertet gerade?"));
+    sh.append(peopleGrid(id=>{ state.current=id; saveState(); ui.view="swipe"; lastAction=null; close(); render(); }));
+  });
+}
+function openDetail(c){
+  openSheet((sh,close)=>{
+    const dp=el("div","detail-photo"); dp.append(photoNode(c,"tph")); sh.append(dp);
+    sh.append(el("h3",null,c.name));
+    const meta=el("div"); meta.style.cssText="color:var(--muted);font-size:13px;margin:-8px 0 2px;line-height:1.5";
+    const bits=[]; if(c.time) bits.push("⏱ "+c.time+" Min."); if(c.diff) bits.push(diffLabel(c.diff));
+    if(c.author && !/gelösch|unbekann|unknown/i.test(c.author)) bits.push("von "+c.author);
+    if(c.locked) bits.push("privates Rezept (Dammie4)");
+    else if(c.search) bits.push("nicht automatisch gefunden");
+    meta.textContent=bits.join("  ·  "); sh.append(meta);
+    if(c.sub){ const s=el("div"); s.style.cssText="font-size:13.5px;margin-top:8px;color:var(--fg)"; s.textContent="„"+c.sub+"”"; sh.append(s);}
+    const dv=el("div","detail-vote");
+    const cur=voteOf(state.current,c.id);
+    const mk=(k,icon,label)=>{ const b=el("button","dv dv-"+k); b.type="button"; b.setAttribute("aria-selected",cur===k?"true":"false");
+      b.innerHTML=icon+"<span>"+label+"</span>"; b.onclick=()=>{ setVote(state.current,c.id, cur===k?null:k); lastAction=null; close(); render(); }; return b; };
+    dv.append(mk("nope",IC.nope,"Nein"));
+    dv.append(mk("like",IC.like,"Will ich"));
+    dv.append(mk("star",IC.star,"Favorit"));
+    sh.append(dv);
+    const a=el("a","btn-wide"); a.href=c.url; a.target="_blank"; rel(a);
+    a.textContent = (c.locked||c.search)? "Auf Chefkoch suchen ↗" : "Originalrezept auf Chefkoch ansehen ↗";
+    sh.append(a);
+  });
+}
+
+/* ===== Boot ===== */
+async function boot(){
+  loadState();
+  try{
+    const r=await fetch("cookies.json",{cache:"no-store"});
+    if(!r.ok) throw new Error("http "+r.status);
+    DATA=await r.json();
+  }catch(e){
+    app.innerHTML='<div class="loading"><div>Die Rezept-Daten konnten nicht geladen werden.<br><small style="color:var(--muted)">'+esc(e.message||e)+'</small></div></div>';
+    return;
+  }
+  render();
+}
+boot();
+</script>
